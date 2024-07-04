@@ -36,6 +36,7 @@ router.get("/getBlogData", auth, async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 });
+//blog for dashboard
 router.get("/", auth, async (req, res) => {
   try {
     const blogs = await Blog.find().populate("user", "username");
@@ -65,6 +66,26 @@ router.put("/:id", auth, async (req, res) => {
 
     const updatedBlog = await blog.save();
     res.json(updatedBlog);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+// Delete a  blog post
+router.delete("/:id", auth, async (req, res) => {
+  try {
+    // Find the blog post by ID
+    const blog = await Blog.findById(req.params.id);
+
+    // Check if the blog post exists and if the user is the owner
+    if (!blog || blog.user.toString() !== req.user.toString()) {
+      return res
+        .status(404)
+        .json({ message: "Blog post not found or unauthorized" });
+    }
+
+    await blog.deleteOne();
+    res.json({ message: "Blog post deleted successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
