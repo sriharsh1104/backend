@@ -30,7 +30,8 @@ router.get("/getBlogData", auth, async (req, res) => {
     const blogs = await Blog.find({ user: req.user }).populate(
       "user",
       "username"
-    );
+    )
+    .sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -39,7 +40,8 @@ router.get("/getBlogData", auth, async (req, res) => {
 //blog for dashboard
 router.get("/", auth, async (req, res) => {
   try {
-    const blogs = await Blog.find().populate("user", "username");
+    const blogs = await Blog.find().populate("user", "username")
+    .sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
