@@ -25,24 +25,27 @@ router.post("/createBlog", auth, async (req, res) => {
   }
 });
 // Get blog data for display (Authenticated)
-router.get('/getBlogData', auth, async (req, res) => {
+router.get("/getBlogData", auth, async (req, res) => {
   try {
-    const blogs = await Blog.find({ user: req.user }).populate('user', 'username');
+    const blogs = await Blog.find({ user: req.user }).populate(
+      "user",
+      "username"
+    );
     res.json(blogs);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
-router.get('/', auth, async (req, res) => {
+router.get("/", auth, async (req, res) => {
   try {
-    const blogs = await Blog.find().populate('user', 'username');
+    const blogs = await Blog.find().populate("user", "username");
     res.json(blogs);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 // Update a blog post
-router.put('/:id', auth, async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   const { title, description } = req.body;
 
   try {
@@ -51,7 +54,9 @@ router.put('/:id', auth, async (req, res) => {
 
     // Check if the blog post exists and if the user is the owner
     if (!blog || blog.user.toString() !== req.user.toString()) {
-      return res.status(404).json({ message: 'Blog post not found or unauthorized' });
+      return res
+        .status(404)
+        .json({ message: "Blog post not found or unauthorized" });
     }
 
     // Update the blog post
@@ -61,9 +66,8 @@ router.put('/:id', auth, async (req, res) => {
     const updatedBlog = await blog.save();
     res.json(updatedBlog);
   } catch (err) {
-    res.status(500).json({ message: 'Server error', error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
-
 
 module.exports = router;
