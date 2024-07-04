@@ -26,8 +26,15 @@ router.post("/createBlog", auth, async (req, res) => {
 });
 // Get blog data for display (Authenticated)
 router.get("/getBlogData", auth, async (req, res) => {
+  const { title } = req.query;
   try {
-    const blogs = await Blog.find({ user: req.user }).populate(
+    const filter = {user: req.user,title};
+
+    // If a title query parameter is provided, add it to the filter
+    if (title) {
+      filter.title = { $regex: title, $options: 'i' }; // 'i' makes it case-insensitive
+    }
+    const blogs = await Blog.find(filter).populate(
       "user",
       "username"
     )
@@ -39,8 +46,16 @@ router.get("/getBlogData", auth, async (req, res) => {
 });
 //blog for dashboard
 router.get("/", auth, async (req, res) => {
+  const { title } = req.query;
+
   try {
-    const blogs = await Blog.find().populate("user", "username")
+    const filter = {};
+
+    // If a title query parameter is provided, add it to the filter
+    if (title) {
+      filter.title = { $regex: title, $options: 'i' }; // 'i' makes it case-insensitive
+    }
+    const blogs = await Blog.find(filter).populate("user", "username")
     .sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
