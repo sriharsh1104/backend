@@ -32,13 +32,10 @@ router.get("/getBlogData", auth, async (req, res) => {
 
     // If a title query parameter is provided, add it to the filter
     if (title) {
-      filter.title = { $regex: title, $options: 'i' }; // 'i' makes it case-insensitive
+      filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
     }
-    const blogs = await Blog.find(filter).populate(
-      "user",
-      "username"
-    )
-    .sort({ createdAt: -1 });
+    const blogs = await Blog.find(filter)
+      .sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -49,14 +46,15 @@ router.get("/", auth, async (req, res) => {
   const { title } = req.query;
 
   try {
-    const filter = {};
+    const filter = {title};
 
     // If a title query parameter is provided, add it to the filter
     if (title) {
-      filter.title = { $regex: title, $options: 'i' }; // 'i' makes it case-insensitive
+      filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
     }
-    const blogs = await Blog.find(filter).populate("user", "username")
-    .sort({ createdAt: -1 });
+    const blogs = await Blog.find(filter)
+      .populate("user", "username")
+      .sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
