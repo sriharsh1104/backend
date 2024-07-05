@@ -35,16 +35,24 @@ router.post("/signin", async (req, res) => {
   const { password, email } = req.body;
 
   try {
-    // Find the user by username
+    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ 
+        status: 400,
+        message: "Invalid Credentials",
+        error: true 
+      });
     }
 
     // Compare the password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ 
+        status: 400,
+        message: "Invalid Credentials",
+        error: true 
+      });
     }
 
     // Generate a JWT token
@@ -52,10 +60,18 @@ router.post("/signin", async (req, res) => {
       expiresIn: "1h",
     });
 
-    res.json({ token });
+    res.json({
+      status: 200,
+      message: "User Login Successfull",
+      token,
+      error: false
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ 
+      status: 500,
+      message: "Server Error",
+      error: err.message 
+    });
   }
 });
-
 module.exports = router;

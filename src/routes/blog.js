@@ -28,14 +28,13 @@ router.post("/createBlog", auth, async (req, res) => {
 router.get("/getBlogData", auth, async (req, res) => {
   const { title } = req.query;
   try {
-    const filter = {user: req.user,title};
+    const filter = { user: req.user, title };
 
     // If a title query parameter is provided, add it to the filter
     if (title) {
       filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
     }
-    const blogs = await Blog.find(filter)
-      .sort({ createdAt: -1 });
+    const blogs = await Blog.find(filter).sort({ createdAt: -1 });
     res.json(blogs);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -46,7 +45,7 @@ router.get("/", auth, async (req, res) => {
   const { title } = req.query;
 
   try {
-    const filter = {title};
+    const filter = { title };
 
     // If a title query parameter is provided, add it to the filter
     if (title) {
@@ -70,7 +69,7 @@ router.put("/:id", auth, async (req, res) => {
 
     // Check if the blog post exists and if the user is the owner
     if (!blog || blog.user.toString() !== req.user.toString()) {
-      return res
+      return reseyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
         .status(404)
         .json({ message: "Blog post not found or unauthorized" });
     }
