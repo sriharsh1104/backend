@@ -34,14 +34,33 @@ router.get("/getBlogData", auth, async (req, res) => {
     if (title) {
       filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
     }
-    const blogs = await Blog.find(filter).sort({ createdAt: -1 });
-    res.json(blogs);
+    const blogs = await Blog.find(filter)
+      // .populate("useruserSpecifiedBlog", "username")
+      .sort({ createdAt: -1 });
+    if (blogs?.length === 0) {
+      return res.status(200).json({
+        status: 200,
+        message: "Data fetched successfully, but no data found",
+        error: false,
+        data: blogs,
+      });
+    }
+    res.json({
+      status: 200,
+      message: "Data fetched successfully",
+      error: false,
+      data: blogs,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({
+      status: 500,
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
 //blog for dashboard
-router.get("/", auth, async (req, res) => {
+router.get("/getBlogDashboard", auth, async (req, res) => {
   const { title } = req.query;
 
   try {
@@ -51,12 +70,31 @@ router.get("/", auth, async (req, res) => {
     if (title) {
       filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
     }
+
     const blogs = await Blog.find(filter)
-      .populate("user", "username")
+      // .populate("useruserSpecifiedBlog", "username")
       .sort({ createdAt: -1 });
-    res.json(blogs);
+    if (blogs?.length === 0) {
+      return res.status(200).json({
+        status: 200,
+        message: "Data fetched successfully, but no data found",
+        error: false,
+        data: blogs,
+      });
+    }
+
+    res.json({
+      status: 200,
+      message: "Data fetched successfully",
+      error: false,
+      data: blogs,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({
+      status: 500,
+      message: "Server error",
+      error: err.message,
+    });
   }
 });
 // Update a blog post
@@ -86,7 +124,7 @@ router.put("/:id", auth, async (req, res) => {
 });
 
 // Delete a  blog post
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/deleteBlog", auth, async (req, res) => {
   try {
     // Find the blog post by ID
     const blog = await Blog.findById(req.params.id);
@@ -105,4 +143,13 @@ router.delete("/:id", auth, async (req, res) => {
   }
 });
 
+// logout a  blog post
+router.post("/logout", auth, async (req, res) => {
+  try {
+    
+    res.json({ message: "Logout Successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
 module.exports = router;

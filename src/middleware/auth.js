@@ -3,7 +3,6 @@ const JWT_SECRET = "your_jwt_secret_here";
 
 module.exports = function (req, res, next) {
   const token = req.header("Authorization")?.replace("Bearer ", "");
-
   if (!token) {
     return res.status(401).json({ message: "No token, authorization denied" });
   }
