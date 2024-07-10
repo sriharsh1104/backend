@@ -30,7 +30,7 @@ router.post("/createBlog", auth, async (req, res) => {
       });
 
       const blog = await newBlog.save();
-      res.status(201).json(blog);
+      res.status(200).json({status:200,error:false,blog});
     } catch (error) {
       res.status(500).json({ message: "Title Already Exist", status:RESPONSES.INVALID_REQ,error: true });
     }
@@ -155,13 +155,4 @@ router.delete("/deleteBlog", auth, async (req, res) => {
   }
 });
 
-// logout a  blog post
-router.post("/logout", auth, async (req, res) => {
-  try {
-    
-    res.json({ message: "Logout Successfully" });
-  } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
-  }
-});
 module.exports = router;

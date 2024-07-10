@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { signUpSchema, loginSchema } = require("../joiValidation/validation");
 const { RESPONSES } = require("../response/response");
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 const JWT_SECRET = "your_jwt_secret_here";
@@ -94,6 +95,14 @@ router.post("/signin", async (req, res) => {
       message: "Server Error",
       error: err.message,
     });
+  }
+});
+// logout a  blog post
+router.post("/logout", auth, async (req, res) => {
+  try {
+    res.json({ message: "Logout Successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 });
 module.exports = router;
