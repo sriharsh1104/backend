@@ -12,6 +12,11 @@ const loginSchema = Joi.object({
   password: Joi.string().min(6).required(),
   email: Joi.string().email().required(),
 });
+const createBlogSchema = Joi.object({
+  title: Joi.string().required(),
+  description: Joi.string().required(),
+});
+
 module.exports = {
-  signUpSchema,loginSchema
+  signUpSchema,loginSchema,createBlogSchema
 };

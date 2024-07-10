@@ -2,6 +2,8 @@ const express = require("express");
 const Blog = require("../models/blog");
 const auth = require("../middleware/auth");
 const User = require("../models/user");
+const { createBlogSchema } = require("../joiValidation/validation");
+const { RESPONSES } = require("../response/response");
 
 const router = express.Router();
 
@@ -9,6 +11,16 @@ const router = express.Router();
 router.post("/createBlog", auth, async (req, res) => {
   const { title, description } = req.body;
   const existingUser = await User.findOne({ _id: req.user });
+  const { error } = createBlogSchema.validate({ title, description });
+  if (error) {
+    return res
+      .status(INVALID_REQ)
+      .json({
+        status: RESPONSES.INVALID_REQ,
+        message: error.details[0].message,
+        error: true,
+      });
+  }
   if (existingUser) {
     try {
       const newBlog = new Blog({
@@ -19,8 +31,8 @@ router.post("/createBlog", auth, async (req, res) => {
 
       const blog = await newBlog.save();
       res.status(201).json(blog);
-    } catch (err) {
-      res.status(500).json({ message: "Server error", error: err.message });
+    } catch (error) {
+      res.status(500).json({ message: "Title Already Exist", status:RESPONSES.INVALID_REQ,error: true });
     }
   }
 });
