@@ -9,6 +9,6 @@ Routes for testing in Postman or any service
 3) http://localhost:5000/api/blog/createBlog => Creating Blog
 4) http://localhost:5000/api/blog/getBlogData => To get blog data user specified
 5) http://localhost:5000/api/blog/updateBlogData => Update Blog Data of User
-6) http://localhost:5000/api/blog/getBlogData => To get blog data user specified
+6) http://localhost:5000/api/blog/getBlogDashboard => To get blog data dashbaord Blog
 7) http://localhost:5000/api/blog/deleteBlog => To delete blog data for user specified
 

@@ -13,13 +13,11 @@ router.post("/createBlog", auth, async (req, res) => {
   const existingUser = await User.findOne({ _id: req.user });
   const { error } = createBlogSchema.validate({ title, description });
   if (error) {
-    return res
-      .status(INVALID_REQ)
-      .json({
-        status: RESPONSES.INVALID_REQ,
-        message: error.details[0].message,
-        error: true,
-      });
+    return res.status(INVALID_REQ).json({
+      status: RESPONSES.INVALID_REQ,
+      message: error.details[0].message,
+      error: true,
+    });
   }
   if (existingUser) {
     try {
@@ -30,9 +28,13 @@ router.post("/createBlog", auth, async (req, res) => {
       });
 
       const blog = await newBlog.save();
-      res.status(200).json({status:200,error:false,blog});
+      res.status(200).json({ status: 200, error: false, blog });
     } catch (error) {
-      res.status(500).json({ message: "Title Already Exist", status:RESPONSES.INVALID_REQ,error: true });
+      res.status(500).json({
+        message: "Title Already Exist",
+        status: RESPONSES.INVALID_REQ,
+        error: true,
+      });
     }
   }
 });
@@ -40,15 +42,17 @@ router.post("/createBlog", auth, async (req, res) => {
 router.get("/getBlogData", auth, async (req, res) => {
   const { title } = req.query;
   try {
-    const filter = { user: req.user, title };
-
+    const filter = { user: req.user };
+    let blogs;
     // If a title query parameter is provided, add it to the filter
     if (title) {
-      filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
+      filter.title = { $regex: title, $options: "i" };
+      blogs = await Blog.find(filter).sort({ createdAt: -1 });
+    } else {
+      blogs = await Blog.find(filter)
+        // .populate("useruserSpecifiedBlog", "username")
+        .sort({ createdAt: -1 });
     }
-    const blogs = await Blog.find(filter)
-      // .populate("useruserSpecifiedBlog", "username")
-      .sort({ createdAt: -1 });
     if (blogs?.length === 0) {
       return res.status(200).json({
         status: 200,
@@ -77,15 +81,16 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
 
   try {
     const filter = { title };
-
+    let blogs;
     // If a title query parameter is provided, add it to the filter
     if (title) {
-      filter.title = { $regex: title, $options: "i" }; // 'i' makes it case-insensitive
+      filter.title = { $regex: title, $options: "i" };
+      blogs = await Blog.find().sort({ createdAt: -1 });
+    } else {
+      blogs = await Blog.find()
+        // .populate("useruserSpecifiedBlog", "username")
+        .sort({ createdAt: -1 });
     }
-
-    const blogs = await Blog.find(filter)
-      // .populate("useruserSpecifiedBlog", "username")
-      .sort({ createdAt: -1 });
     if (blogs?.length === 0) {
       return res.status(200).json({
         status: 200,
@@ -94,7 +99,6 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
         data: blogs,
       });
     }
-
     res.json({
       status: 200,
       message: "Data fetched successfully",

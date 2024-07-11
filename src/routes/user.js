@@ -100,9 +100,9 @@ router.post("/signin", async (req, res) => {
 // logout a  blog post
 router.post("/logout", auth, async (req, res) => {
   try {
-    res.json({ message: "Logout Successfully" });
+    res.json({ message: "Logout Successfully",status:RESPONSES.SUCCESS,error:false });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message ,status: RESPONSES.INTERNALSERVER });
   }
 });
 module.exports = router;
