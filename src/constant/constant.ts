@@ -1,0 +1,7 @@
+export const Bearer_Token = "AAAAAAAAAAAAAAAAAAAAAFhouwEAAAAASalxd4p5mohp6cXhtWCTAvQaLZ0%3DgFeQ7uPqIRVhjLAAxMuOmG3yIEZkmjDi3yZnV4HKIj6ll8Q4qp";
+export const Access_Token = "1674075103259242498-CaKMOHCdaFknCJsEZj710UQ0vHZ603";
+export const Access_Token_Secret = "erjRgY8UC1xuzTvwnwfcCUcvN6jvJwsMpbUH3fjgi6yYD"
+export const TWITTER_CONSUMER_KEY = "BnEIv1SIWJsPGXkFn4AKyvG4y";
+export const TWITTER_CONSUMER_SECRET = "ludywZ7DHiZwWAtPr0VZMtiEIjn7ssfkOhZ5GLwu5VhdDM0WOM";
+export const CLIENT_ID ="ZUZKT2dVZkY4ZWxLWHByQ2VjS246MTpjaQ";
+export const CLIENT_SECRET_KEY = "qf5qZfht79ugg2S7Rg1IyOSWBV_xWWx4reuFeyiobg6wrxicTj"
