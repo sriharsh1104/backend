@@ -15,7 +15,7 @@ router.post("/createBlog", auth, async (req, res) => {
   if (error) {
     return res.status(INVALID_REQ).json({
       status: RESPONSES.INVALID_REQ,
-      message: error.details[0].message,
+      message: "Blog Is SuccessFully Created",
       error: true,
     });
   }
@@ -123,7 +123,7 @@ router.put("/:id", auth, async (req, res) => {
 
     // Check if the blog post exists and if the user is the owner
     if (!blog || blog.user.toString() !== req.user.toString()) {
-      return reseyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+      return res
         .status(404)
         .json({ message: "Blog post not found or unauthorized" });
     }
@@ -143,19 +143,35 @@ router.put("/:id", auth, async (req, res) => {
 router.delete("/deleteBlog", auth, async (req, res) => {
   try {
     // Find the blog post by ID
-    const blog = await Blog.findById(req.params.id);
+    const blog = await Blog.findById(req.body.id);
 
     // Check if the blog post exists and if the user is the owner
     if (!blog || blog.user.toString() !== req.user.toString()) {
       return res
         .status(404)
-        .json({ message: "Blog post not found or unauthorized" });
+        .json({
+          message: "Blog post not found or unauthorized",
+          status: RESPONSES.NOTFOUND,
+          error: true,
+        });
     }
 
     await blog.deleteOne();
-    res.json({ message: "Blog post deleted successfully" });
+    res
+      .status(200)
+      .json({
+        error: false,
+        message: "Blog post deleted successfully",
+        status: RESPONSES.SUCCESS,
+      });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Server error",
+        error: true,
+        status: RESPONSES.INTERNALSERVER,
+      });
   }
 });
 
