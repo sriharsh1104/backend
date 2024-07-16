@@ -114,12 +114,12 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
   }
 });
 // Update a blog post
-router.put("/:id", auth, async (req, res) => {
+router.put("/updateBlog", auth, async (req, res) => {
   const { title, description } = req.body;
 
   try {
     // Find the blog post by ID
-    const blog = await Blog.findById(req.params.id);
+    const blog = await Blog.findById(req.body.id);
 
     // Check if the blog post exists and if the user is the owner
     if (!blog || blog.user.toString() !== req.user.toString()) {
@@ -132,10 +132,20 @@ router.put("/:id", auth, async (req, res) => {
     blog.title = title;
     blog.description = description;
 
-    const updatedBlog = await blog.save();
-    res.json(updatedBlog);
+    await blog.save();
+    res.status(200).json({
+      error: false,
+      message: "Blog Edited Successfully",
+      status: RESPONSES.SUCCESS,
+    });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Server error",
+        error: RESPONSES.INTERNALSERVER,
+        error: true,
+      });
   }
 });
 
@@ -147,31 +157,25 @@ router.delete("/deleteBlog", auth, async (req, res) => {
 
     // Check if the blog post exists and if the user is the owner
     if (!blog || blog.user.toString() !== req.user.toString()) {
-      return res
-        .status(404)
-        .json({
-          message: "Blog post not found or unauthorized",
-          status: RESPONSES.NOTFOUND,
-          error: true,
-        });
+      return res.status(404).json({
+        message: "Blog post not found or unauthorized",
+        status: RESPONSES.NOTFOUND,
+        error: true,
+      });
     }
 
     await blog.deleteOne();
-    res
-      .status(200)
-      .json({
-        error: false,
-        message: "Blog post deleted successfully",
-        status: RESPONSES.SUCCESS,
-      });
+    res.status(200).json({
+      error: false,
+      message: "Blog post deleted successfully",
+      status: RESPONSES.SUCCESS,
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: "Server error",
-        error: true,
-        status: RESPONSES.INTERNALSERVER,
-      });
+    res.status(500).json({
+      message: "Server error",
+      error: true,
+      status: RESPONSES.INTERNALSERVER,
+    });
   }
 });
 
