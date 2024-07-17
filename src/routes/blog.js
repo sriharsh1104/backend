@@ -78,20 +78,28 @@ router.get("/getBlogData", auth, async (req, res) => {
 //blog for dashboard
 router.get("/getBlogDashboard", auth, async (req, res) => {
   const { title } = req.query;
+  const userId = req.user._id; // Assuming req.user contains the authenticated user
 
   try {
-    const filter = { title };
-    let blogs;
-    // If a title query parameter is provided, add it to the filter
+    const filter = {};
     if (title) {
       filter.title = { $regex: title, $options: "i" };
-      blogs = await Blog.find().sort({ createdAt: -1 });
-    } else {
-      blogs = await Blog.find()
-        // .populate("useruserSpecifiedBlog", "username")
-        .sort({ createdAt: -1 });
     }
-    if (blogs?.length === 0) {
+
+    let blogs = await Blog.find(filter)
+      .populate("likedBy", "username")
+      .sort({ createdAt: -1 });
+
+    // Add a field to check if the current user has liked each blog
+    blogs = blogs.map((blog) => {
+      const userLiked = blog.likedBy.some((user) => user.equals(userId));
+      return {
+        ...blog._doc,
+        userLiked,
+      };
+    });
+
+    if (blogs.length === 0) {
       return res.status(200).json({
         status: 200,
         message: "Data fetched successfully, but no data found",
@@ -99,6 +107,7 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
         data: blogs,
       });
     }
+
     res.json({
       status: 200,
       message: "Data fetched successfully",
@@ -113,6 +122,7 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
     });
   }
 });
+
 // Update a blog post
 router.put("/updateBlog", auth, async (req, res) => {
   const { title, description } = req.body;
@@ -139,13 +149,11 @@ router.put("/updateBlog", auth, async (req, res) => {
       status: RESPONSES.SUCCESS,
     });
   } catch (err) {
-    res
-      .status(500)
-      .json({
-        message: "Server error",
-        error: RESPONSES.INTERNALSERVER,
-        error: true,
-      });
+    res.status(500).json({
+      message: "Server error",
+      error: RESPONSES.INTERNALSERVER,
+      error: true,
+    });
   }
 });
 
@@ -175,6 +183,48 @@ router.delete("/deleteBlog", auth, async (req, res) => {
       message: "Server error",
       error: true,
       status: RESPONSES.INTERNALSERVER,
+    });
+  }
+});
+router.post("/likePost", auth, async (req, res) => {
+  const { id } = req.body;
+  const userId = req.user;
+
+  try {
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({
+        status: 404,
+        message: "Post not found",
+        error: true,
+      });
+    }
+
+    // Check if the user has already liked the post
+    if (blog.likedBy.includes(userId)) {
+      return res.status(400).json({
+        status: 400,
+        message: "User has already liked this post",
+        error: true,
+      });
+    }
+
+    // Increment the likes count and add the user to the likedBy array
+    blog.likes += 1;
+    blog.likedBy.push(userId);
+    await blog.save();
+
+    res.json({
+      status: 200,
+      message: "Post liked successfully",
+      error: false,
+      data: blog,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: 500,
+      message: "Server error",
+      error: RESPONSES.INTERNALSERVER,
     });
   }
 });

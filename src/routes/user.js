@@ -18,7 +18,7 @@ router.post("/signup", async (req, res) => {
       .status(400)
       .json({
         status: RESPONSES.BADREQUEST,
-        message: error.details[0].message,
+        message: "Invalid Creditionals",
         error: true,
       });
   }
@@ -37,9 +37,9 @@ router.post("/signup", async (req, res) => {
     const newUser = new User({ username, password: hashedPassword, email });
     await newUser.save();
 
-    res.status(200).json({ message: "User created successfully" });
+    res.status(200).json({ message: "User created successfully" ,error: false, status: RESPONSES.SUCCESS });
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Server error", error: true, status: RESPONSES.INTERNALSERVER});
   }
 });
 
