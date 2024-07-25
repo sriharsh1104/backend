@@ -16,5 +16,5 @@ const blogSchema = new mongoose.Schema({
   },
   likes: { type: Number, default: 0 },
   likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-});
+},{ timestamps: true });
 module.exports = mongoose.model("Blog", blogSchema);

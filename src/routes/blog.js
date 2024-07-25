@@ -14,8 +14,8 @@ router.post("/createBlog", auth, async (req, res) => {
   const { error } = createBlogSchema.validate({ title, description });
   if (error) {
     return res.status(INVALID_REQ).json({
+      message: "INVALID REQUEST",
       status: RESPONSES.INVALID_REQ,
-      message: "Blog Is SuccessFully Created",
       error: true,
     });
   }
@@ -28,7 +28,7 @@ router.post("/createBlog", auth, async (req, res) => {
       });
 
       const blog = await newBlog.save();
-      res.status(200).json({ status: 200, error: false, blog });
+      res.status(200).json({ message:"Blog is Successfully Created", status: 200, error: false, blog });
     } catch (error) {
       res.status(500).json({
         message: "Title Already Exist",
@@ -78,7 +78,7 @@ router.get("/getBlogData", auth, async (req, res) => {
 //blog for dashboard
 router.get("/getBlogDashboard", auth, async (req, res) => {
   const { title } = req.query;
-  const userId = req.user._id; // Assuming req.user contains the authenticated user
+  const userId = req.user; // Assuming req.user contains the authenticated user
 
   try {
     const filter = {};
@@ -186,6 +186,8 @@ router.delete("/deleteBlog", auth, async (req, res) => {
     });
   }
 });
+
+// Toggle like on a blog post
 router.post("/likePost", auth, async (req, res) => {
   const { id } = req.body;
   const userId = req.user;
@@ -201,25 +203,32 @@ router.post("/likePost", auth, async (req, res) => {
     }
 
     // Check if the user has already liked the post
-    if (blog.likedBy.includes(userId)) {
-      return res.status(400).json({
-        status: 400,
-        message: "User has already liked this post",
-        error: true,
+    const userLikedIndex = blog.likedBy.indexOf(userId);
+    if (userLikedIndex === -1) {
+      // User has not liked the post, add like
+      blog.likes += 1;
+      blog.likedBy.push(userId);
+      await blog.save();
+
+      return res.json({
+        status: 200,
+        message: "Post liked successfully",
+        error: false,
+        data: blog,
+      });
+    } else {
+      // User has already liked the post, remove like
+      blog.likes -= 1;
+      blog.likedBy.splice(userLikedIndex, 1);
+      await blog.save();
+
+      return res.json({
+        status: 200,
+        message: "Post unliked successfully",
+        error: false,
+        data: blog,
       });
     }
-
-    // Increment the likes count and add the user to the likedBy array
-    blog.likes += 1;
-    blog.likedBy.push(userId);
-    await blog.save();
-
-    res.json({
-      status: 200,
-      message: "Post liked successfully",
-      error: false,
-      data: blog,
-    });
   } catch (err) {
     res.status(500).json({
       status: 500,
