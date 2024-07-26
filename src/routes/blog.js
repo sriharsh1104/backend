@@ -2,6 +2,7 @@ const express = require("express");
 const Blog = require("../models/blog");
 const auth = require("../middleware/auth");
 const User = require("../models/user");
+const Comment = require("../models/comment")
 const { createBlogSchema } = require("../joiValidation/validation");
 const { RESPONSES } = require("../response/response");
 
@@ -82,9 +83,8 @@ router.get("/getBlogData", auth, async (req, res) => {
 });
 //blog for dashboard
 router.get("/getBlogDashboard", auth, async (req, res) => {
-  console.log("sort", req.query);
   const { title, sortOrder } = req.query;
-  const userId = req.user; // Assuming req.user contains the authenticated user
+  const userId = req.user; 
 
   try {
     const filter = {};
@@ -92,11 +92,11 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
       filter.title = { $regex: title, $options: "i" };
     }
     // Determine sort order based on sortOrder parameter
-    let sort = { createdAt: -1 }; // Default: latest to oldest
+    let sort = { createdAt: -1 }; 
     if (sortOrder === "oldest") {
-      sort = { createdAt: 1 }; // Oldest to latest
+      sort = { createdAt: 1 }; 
     } else if (sortOrder === "mostLiked") {
-      sort = { likes: -1, createdAt: -1 }; // Most liked to least liked
+      sort = { likes: -1, createdAt: -1 };
     }
 
     let blogs = await Blog.find(filter)
@@ -207,6 +207,7 @@ router.post("/likePost", auth, async (req, res) => {
 
   try {
     const blog = await Blog.findById(id);
+    console.log('blog', blog)
     if (!blog) {
       return res.status(404).json({
         status: 404,
@@ -247,6 +248,45 @@ router.post("/likePost", auth, async (req, res) => {
       status: 500,
       message: "Server error",
       error: RESPONSES.INTERNALSERVER,
+    });
+  }
+});
+
+// Add a comment to a blog post
+router.post("/comment", auth, async (req, res) => {
+  const { blogId, content } = req.body;
+  const userId = req.user;
+
+  try {
+    const blog = await Blog.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({
+        status: RESPONSES.NOTFOUND,
+        message: "Blog post not found",
+        error: true,
+      });
+    }
+
+    const newComment = new Comment({
+      content,
+      user: userId,
+      blog: blogId,
+    });
+
+    const comment = await newComment.save();
+
+    res.status(200).json({
+      status: RESPONSES.SUCCESS,
+      message: "Comment added successfully",
+      error: false,
+      data: comment,
+    });
+  } catch (err) {
+    res.status(500).json({
+      status: RESPONSES.INTERNALSERVER,
+      message: "Server error",
+      error: true,
     });
   }
 });
