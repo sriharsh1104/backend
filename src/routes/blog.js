@@ -28,7 +28,14 @@ router.post("/createBlog", auth, async (req, res) => {
       });
 
       const blog = await newBlog.save();
-      res.status(200).json({ message:"Blog is Successfully Created", status: 200, error: false, blog });
+      res
+        .status(200)
+        .json({
+          message: "Blog is Successfully Created",
+          status: 200,
+          error: false,
+          blog,
+        });
     } catch (error) {
       res.status(500).json({
         message: "Title Already Exist",
@@ -77,7 +84,8 @@ router.get("/getBlogData", auth, async (req, res) => {
 });
 //blog for dashboard
 router.get("/getBlogDashboard", auth, async (req, res) => {
-  const { title } = req.query;
+  console.log("sort", req.query);
+  const { title, sortOrder } = req.query;
   const userId = req.user; // Assuming req.user contains the authenticated user
 
   try {
@@ -85,10 +93,15 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
     if (title) {
       filter.title = { $regex: title, $options: "i" };
     }
+    // Determine sort order based on sortOrder parameter
+    let sort = { createdAt: -1 }; // Default: latest to oldest
+    if (sortOrder === "oldest") {
+      sort = { createdAt: 1 }; // Oldest to latest
+    }
 
     let blogs = await Blog.find(filter)
       .populate("likedBy", "username")
-      .sort({ createdAt: -1 });
+      .sort(sort);
 
     // Add a field to check if the current user has liked each blog
     blogs = blogs.map((blog) => {
