@@ -28,14 +28,12 @@ router.post("/createBlog", auth, async (req, res) => {
       });
 
       const blog = await newBlog.save();
-      res
-        .status(200)
-        .json({
-          message: "Blog is Successfully Created",
-          status: 200,
-          error: false,
-          blog,
-        });
+      res.status(200).json({
+        message: "Blog is Successfully Created",
+        status: 200,
+        error: false,
+        blog,
+      });
     } catch (error) {
       res.status(500).json({
         message: "Title Already Exist",
@@ -97,6 +95,8 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
     let sort = { createdAt: -1 }; // Default: latest to oldest
     if (sortOrder === "oldest") {
       sort = { createdAt: 1 }; // Oldest to latest
+    } else if (sortOrder === "mostLiked") {
+      sort = { likes: -1, createdAt: -1 }; // Most liked to least liked
     }
 
     let blogs = await Blog.find(filter)
