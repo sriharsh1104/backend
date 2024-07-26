@@ -82,32 +82,43 @@ router.get("/getBlogData", auth, async (req, res) => {
   }
 });
 //blog for dashboard
+
 router.get("/getBlogDashboard", auth, async (req, res) => {
   const { title, sortOrder } = req.query;
-  const userId = req.user; 
+  const userId = req.user;
 
   try {
     const filter = {};
     if (title) {
       filter.title = { $regex: title, $options: "i" };
     }
+
     // Determine sort order based on sortOrder parameter
-    let sort = { createdAt: -1 }; 
+    let sort = { createdAt: -1 };
     if (sortOrder === "oldest") {
-      sort = { createdAt: 1 }; 
+      sort = { createdAt: 1 };
     } else if (sortOrder === "mostLiked") {
       sort = { likes: -1, createdAt: -1 };
     }
 
+    // Fetch blogs with filter and sort
     let blogs = await Blog.find(filter)
-      .populate("likedBy", "username")
-      .sort(sort);
+      .sort(sort)
+      .lean(); 
 
-    // Add a field to check if the current user has liked each blog
+    // Fetch comments for each blog
+    const comments = await Comment.find({
+      blog: { $in: blogs.map(blog => blog._id) }
+    }).lean(); 
+
+    // Map comments to blogs
     blogs = blogs.map((blog) => {
-      const userLiked = blog.likedBy.some((user) => user.equals(userId));
+      // Find comments related to this blog
+      const blogComments = comments.filter(comment => comment.blog.toString() === blog._id.toString());
+      const userLiked = blog.likedBy.some(user => user.toString() === userId.toString());
       return {
-        ...blog._doc,
+        ...blog,
+        comments: blogComments,
         userLiked,
       };
     });
