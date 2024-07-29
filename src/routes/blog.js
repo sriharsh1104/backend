@@ -83,6 +83,71 @@ router.get("/getBlogData", auth, async (req, res) => {
 });
 //blog for dashboard
 
+// router.get("/getBlogDashboard", auth, async (req, res) => {
+//   const { title, sortOrder } = req.query;
+//   const userId = req.user;
+
+//   try {
+//     const filter = {};
+//     if (title) {
+//       filter.title = { $regex: title, $options: "i" };
+//     }
+
+//     // Determine sort order based on sortOrder parameter
+//     let sort = { createdAt: -1 };
+//     if (sortOrder === "oldest") {
+//       sort = { createdAt: 1 };
+//     } else if (sortOrder === "mostLiked") {
+//       sort = { likes: -1, createdAt: -1 };
+//     }
+
+//     // Fetch blogs with filter and sort
+//     let blogs = await Blog.find(filter)
+//       .sort(sort)
+//       .lean(); 
+
+//     // Fetch comments for each blog
+//     const comments = await Comment.find({
+//       blog: { $in: blogs.map(blog => blog._id) }
+//     }).lean(); 
+
+//     // Map comments to blogs
+//     blogs = blogs?.map((blog) => {
+//       // Find comments related to this blog
+//       const blogComments = comments.filter(comment => comment.blog.toString() === blog._id.toString());
+//       const userLiked = blog.likedBy.some(user => user.toString() === userId.toString());
+
+//       return {
+//         ...blog,
+//         comments: blogComments,
+//         userLiked,
+//         // userName,
+//       };
+//     });
+
+//     if (blogs.length === 0) {
+//       return res.status(200).json({
+//         status: 200,
+//         message: "Data fetched successfully, but no data found",
+//         error: false,
+//         data: blogs,
+//       });
+//     }
+
+//     res.json({
+//       status: 200,
+//       message: "Data fetched successfully",
+//       error: false,
+//       data: blogs,
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       status: 500,
+//       message: "Server error",
+//       error: err.message,
+//     });
+//   }
+// });
 router.get("/getBlogDashboard", auth, async (req, res) => {
   const { title, sortOrder } = req.query;
   const userId = req.user;
@@ -111,14 +176,31 @@ router.get("/getBlogDashboard", auth, async (req, res) => {
       blog: { $in: blogs.map(blog => blog._id) }
     }).lean(); 
 
+    // Extract userIds from comments
+    const userIds = [...new Set(comments.map(comment => comment.user))];
+
+    // Fetch usernames for these userIds
+    const users = await User.find({ _id: { $in: userIds } }, 'username').lean();
+    const userMap = users.reduce((acc, user) => {
+      acc[user._id] = user.username;
+      return acc;
+    }, {});
+
     // Map comments to blogs
-    blogs = blogs.map((blog) => {
+    blogs = blogs?.map((blog) => {
       // Find comments related to this blog
       const blogComments = comments.filter(comment => comment.blog.toString() === blog._id.toString());
       const userLiked = blog.likedBy.some(user => user.toString() === userId.toString());
+
+      // Map over comments to include username
+      const commentsWithUsernames = blogComments.map(comment => ({
+        ...comment,
+        userName: userMap[comment.user]
+      }));
+
       return {
         ...blog,
-        comments: blogComments,
+        comments: commentsWithUsernames,
         userLiked,
       };
     });
@@ -286,7 +368,7 @@ router.post("/comment", auth, async (req, res) => {
     });
 
     const comment = await newComment.save();
-
+    const user = await User.findById(userId).select('username');
     res.status(200).json({
       status: RESPONSES.SUCCESS,
       message: "Comment added successfully",
